@@ -29,7 +29,7 @@ enum Commands {
 
 /// checks if symlinker is called from a symlinker archive root and panics if it is not
 // NOTE: we are making the design choice, deviating from CLI like cargo, to not allow execution
-// unless the path explictly has a symlinker archive root.
+// unless the working directory explictly is a symlinker archive root directory.
 fn verify_archive_root() {
     // try to load the config TOML as a string
     let config = fs::read_to_string(format!("./{}", constants::CONFIG_NAME)).expect(&format!(

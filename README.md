@@ -38,5 +38,5 @@ symlinker_root_here = true
 
 ## Installation
 
-With Rust [installed](https://doc.rust-lang.org/book/ch01-01-installation.html) (which includes its `cargo` package manager), run 
+Symlinks are a Unix-only feature. On a Unix system with Rust [installed](https://doc.rust-lang.org/book/ch01-01-installation.html) (which includes its `cargo` package manager), run 
 ```cargo install --git https://github.com/wade-cheng/symlinker```

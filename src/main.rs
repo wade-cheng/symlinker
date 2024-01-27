@@ -1,6 +1,5 @@
 mod new;
 mod run;
-mod stats;
 
 mod constants;
 
@@ -20,8 +19,6 @@ struct Args {
 enum Commands {
     /// Runs symlinker, symlinking all discoverable files
     Run,
-    /// Lists statistics for this symlinker archive
-    Stats,
     /// Creates a new symlinker archive at the current location
     New {
         /// name of archive to be created
@@ -30,40 +27,39 @@ enum Commands {
     },
 }
 
-/// checks whether we are called from a symlinker archive root and panics if not
-// TODO: make it like cargo where you can call from any subdirectory of the archive
-fn in_archive() {
+/// checks if symlinker is called from a symlinker archive root and panics if it is not
+// NOTE: we are making the design choice, deviating from CLI like cargo, to not allow execution
+// unless the path explictly has a symlinker archive root.
+fn verify_archive_root() {
+    // try to load the config TOML as a string
     let config = fs::read_to_string(format!("./{}", constants::CONFIG_NAME)).expect(&format!(
         "Did not detect {}: not running from a symlinker archive.",
         constants::CONFIG_NAME
     ));
 
+    // try to parse the TOML
     let config = config
         .parse::<Table>()
         .expect("Config file could not be parsed: not running from a symlinker archive.");
 
-    let x = match &config["Config"]["symlinker_root_here"] {
-        toml::Value::Boolean(b) => b,
+    // check if the TOML matches the symlinker "magic number" identifier
+    if !match &config["Config"]["symlinker_root_here"] {
+        toml::Value::Boolean(b) => *b,
         _ => panic!("Not a symlinker config file: not running from a symlinker archive."),
-    };
-
-    if !x {
-        // TODO: weird and unintuitive: make a magic number? something that will identify a config file instead.
-        panic!("Not at symlinker root file.")
+    } {
+        panic!("Not a symlinker config file: not running from a symlinker archive.");
     }
 }
 
 fn main() {
+    // take in command line arguments
     let args = Args::parse();
 
+    // run corresponding initialization functions
     match &args.command {
         Commands::Run => {
-            in_archive();
+            verify_archive_root();
             run::symlink_all();
-        }
-        Commands::Stats => {
-            in_archive();
-            stats::print_stats();
         }
         Commands::New { name } => {
             new::create_archive(name);

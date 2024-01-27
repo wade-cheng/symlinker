@@ -1,4 +1,4 @@
-use std::fs;
+use std::{collections::HashSet, fs};
 use std::os::unix::fs as unix_fs;
 use walkdir::{DirEntry, WalkDir};
 
@@ -9,11 +9,12 @@ fn touch_cache_dir() {
     fs::create_dir(constants::CACHE_NAME).ok();
 }
 
+/// returns whether an entry should be symlinked.
 /// the symlinker config TOML, hidden files, and directories are not to be symlinked
 fn should_not_symlink(entry: &DirEntry) -> bool {
     // println!("entry filename: {}", entry.file_name().to_str().unwrap());
 
-    let file_name = entry.file_name().to_string_lossy();
+    let file_name = entry.file_name().to_str().unwrap();
     if file_name.starts_with('.') || file_name == constants::CONFIG_NAME {
         return true;
     }
@@ -30,14 +31,23 @@ fn should_not_symlink(entry: &DirEntry) -> bool {
     false
 }
 
-/// TODO: THIS
-fn in_cache(e: &DirEntry) -> bool {
-    false
+/// this is now unused
+fn _get_cache_filenames() -> HashSet<String> {
+    let mut names = HashSet::new();
+
+    for entry in WalkDir::new(constants::CONFIG_NAME) {
+        names.insert(entry
+            .unwrap()
+            .file_name()
+            .to_str()
+            .unwrap()
+            .to_string());
+    }
+
+    names
 }
 
 pub fn symlink_all() {
-    println!("ran :3");
-
     touch_cache_dir();
 
     // silently skip directories that the owner of the running process does not have permission to access
@@ -49,20 +59,20 @@ pub fn symlink_all() {
         if entry.metadata().unwrap().is_symlink() {
             continue;
         }
+
         println!("processing unsymlinked file at {}", entry.path().display());
 
         // move the file to cache and make symlink from its last position to the cache position
-        let file_name = entry.file_name().to_string_lossy();
+        let file_name = entry.file_name().to_str().unwrap();
         let file_path = entry.path();
 
-        if !in_cache(&entry) {
-            println!("  adding file {} to cache", file_name);
-            fs::rename(
-                file_path,
-                format!("{}/{}", constants::CACHE_NAME, file_name),
-            )
-            .unwrap();
-        }
+        println!("  renaming file {} to cache", file_path.display());
+        fs::rename(
+            file_path,
+            format!("{}/{}", constants::CACHE_NAME, file_name),
+        )
+        .unwrap();
+    
         println!("  creating symlink from {} to cache", file_path.display());
         unix_fs::symlink(
             format!("../{}/{}", constants::CACHE_NAME, file_name),
@@ -70,4 +80,6 @@ pub fn symlink_all() {
         )
         .unwrap();
     }
+
+    println!("finished.");
 }

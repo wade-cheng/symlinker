@@ -24,9 +24,19 @@ Example resultant folder layout:
 └── symlinker_cfg.toml
 ```
 
-Run the `symlinker` command from a directory with a `symlinker_cfg.toml` configuration file. 
-As of version `0.1.0`, it must contain:
+## Usage
+
+Run `symlinker new --name <NAME>` to create a new symlinker archive.
+
+Run `symlinker run` from a directory with a `symlinker_cfg.toml` configuration file. 
+We use this as a "[magic number](https://en.wikipedia.org/wiki/Magic_number_(programming))" identifier 
+to prevent accidental file system modifications. It must contain, at minimum:
 ```
 [Config]
 symlinker_root_here = true
 ```
+
+## Installation
+
+With Rust [installed](https://doc.rust-lang.org/book/ch01-01-installation.html) (which includes its `cargo` package manager), run 
+```cargo install --git https://github.com/wade-cheng/symlinker```

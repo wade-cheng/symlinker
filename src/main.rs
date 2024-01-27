@@ -12,7 +12,6 @@ use toml::Table;
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
 struct Args {
-    /// test
     #[command(subcommand)]
     command: Commands,
 }
@@ -24,11 +23,15 @@ enum Commands {
     /// Lists statistics for this symlinker archive
     Stats,
     /// Creates a new symlinker archive at the current location
-    New,
+    New {
+        /// name of archive to be created
+        #[arg(short, long)]
+        name: String,
+    },
 }
 
-/// checks returns whether we are called from a symlinker archive root and panics if not
-/// TODO: make it like cargo where you can call from any subdirectory of the archive
+/// checks whether we are called from a symlinker archive root and panics if not
+// TODO: make it like cargo where you can call from any subdirectory of the archive
 fn in_archive() {
     let config = fs::read_to_string(format!("./{}", constants::CONFIG_NAME)).expect(&format!(
         "Did not detect {}: not running from a symlinker archive.",
@@ -62,8 +65,8 @@ fn main() {
             in_archive();
             stats::print_stats();
         }
-        Commands::New => {
-            new::create_archive();
+        Commands::New { name } => {
+            new::create_archive(name);
         }
     }
 }

@@ -36,6 +36,8 @@ to prevent accidental file system modifications. It must contain, at minimum:
 symlinker_root_here = true
 ```
 
+Note: this program probably has a bug where it is not able to process directories past a depth of 1 (ie the `folder01/*` level). It doesn't come up in my personal use case, and I'm busy with other things right now, so it hasn't been fixed. I'll probably come back to bugfix this, though.
+
 ## Installation
 
 Symlinks are a Unix-only feature. On a Unix system with Rust [installed](https://doc.rust-lang.org/book/ch01-01-installation.html) (which includes its `cargo` package manager), run 
